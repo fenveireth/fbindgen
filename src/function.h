@@ -11,5 +11,6 @@ public:
 
 private:
   void rd_proto(const clang::FunctionDecl* d);
+  void rd_body(const clang::FunctionDecl* d);
 };
 

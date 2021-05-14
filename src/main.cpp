@@ -12,6 +12,7 @@ namespace {
 vector<regex> filter_functions;
 vector<regex> filter_consts;
 vector<regex> filter_types;
+vector<regex> filter_inlines;
 
 bool exports(const Str& name, const vector<regex>& lst)
 {
@@ -24,6 +25,7 @@ bool exports(const Str& name, const vector<regex>& lst)
 }
 
 map<Str, UPtr<Fun>> functions;
+map<Str, Str> globals;
 
 void traverse(const Decl* d)
 {
@@ -31,7 +33,7 @@ void traverse(const Decl* d)
   if (kind == Decl::Function) {
     auto fun = dynamic_cast<const FunctionDecl*>(d);
     Str funname = fun->getNameAsString();
-    if (exports(funname, filter_functions))
+    if (exports(funname, fun->isInlined() ? filter_inlines : filter_functions))
       functions[funname] = make_unique<Fun>(fun);
   }
   else if (kind == Decl::Enum)
@@ -56,8 +58,16 @@ void traverse(const Decl* d)
       }
     }
   }
-  //else
-  //  printf("UNK (td): %s\n", d->getDeclKindName());
+  else if (kind == Decl::Var) {
+    auto vd = dynamic_cast<const VarDecl*>(d);
+    Str name = vd->getNameAsString();
+    if (vd->hasExternalStorage() && exports(name, filter_consts)) {
+      QualType t = vd->getType();
+      globals[name] = get_type(t);
+    }
+  }
+//  else
+//    printf("UNK (td): %s\n", d->getDeclKindName());
 }
 
 class FGConsumer : public ASTConsumer
@@ -88,6 +98,10 @@ public:
 void dump(const vector<Str>& link)
 {
   printf("extern {\n");
+  for (auto& p: globals) {
+    printf("  pub static %s: %s;\n", p.first.c_str(), p.second.c_str());
+  }
+
   for (auto& p : functions) {
     if (!p.second->is_inline) {
       printf("  %s;\n", p.second->decl.c_str());
@@ -104,10 +118,16 @@ void dump(const vector<Str>& link)
   {
     IdentifierInfo& id = ids.get(it.first());
     Str name = id.getName().str();
-    if (id.hasMacroDefinition() && exports(name, filter_functions)) {
+    if (id.hasMacroDefinition() && exports(name, filter_inlines)) {
       Str def = fold_macro(id, *preprocessor, functions);
       if (def.size())
         printf("%s\n", def.c_str());
+    }
+  }
+
+  for (const auto& p : functions) {
+    if (p.second->is_inline) {
+      printf("%s\n", p.second->decl.c_str());
     }
   }
 }
@@ -136,6 +156,8 @@ int main(int argc, const char** argv)
       filter_consts.push_back(regex(line.substr(10)));
     else if (!strncmp("Types:", buff, 6))
       filter_types.push_back(regex(line.substr(6)));
+    else if (!strncmp("Inlines:", buff, 8))
+      filter_inlines.push_back(regex(line.substr(8)));
     else {
       fprintf(stderr, "unrecognized filter type: %s\n", buff);
       return 1;
