@@ -121,7 +121,7 @@ Fun::Fun(const FunctionDecl* d)
 void Fun::rd_proto(const FunctionDecl* d)
 {
   name = d->getNameAsString();
-  QualType rt = d->getReturnType();
+  QualType rt = d->getDeclaredReturnType();
 
   vector<Str> argNames;
   vector<Str> argTypes;
@@ -140,7 +140,7 @@ void Fun::rd_proto(const FunctionDecl* d)
   }
 
   decl = "pub fn "s + name + '(';
-  type = "extern fn("s;
+  type = "unsafe extern fn("s;
   for (unsigned i=0; i < argTypes.size(); ++i) {
     if (i > 0) {
       decl += ", "s;

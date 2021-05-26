@@ -70,33 +70,25 @@ void traverse(const Decl* d)
 //    printf("UNK (td): %s\n", d->getDeclKindName());
 }
 
-class FGConsumer : public ASTConsumer
-{
-public:
-  bool HandleTopLevelDecl(DeclGroupRef g) override
-  {
-    for (Decl* d : g)
-      traverse(d);
-
-    return true;
-  }
-};
-
 SPtr<Preprocessor> preprocessor;
-
-class FEAction : public ASTFrontendAction
-{
-public:
-  UPtr<ASTConsumer> CreateASTConsumer(CompilerInstance& ci, StringRef file) override
-  {
-    preprocessor = ci.getPreprocessorPtr();
-    compiler_context = &(ci.getASTContext());
-    return make_unique<FGConsumer>();
-  }
-};
+vector<Str> pkgconf_deps;
 
 void dump(const vector<Str>& link)
 {
+  auto& ids = preprocessor->getIdentifierTable();
+
+  // constants #define
+  for (const auto& it : ids)
+  {
+    IdentifierInfo& id = ids.get(it.first());
+    Str name = id.getName().str();
+    if (id.hasMacroDefinition() && exports(name, filter_consts)) {
+      Str def = fold_macro(id, *preprocessor, functions, false);
+      if (def.size())
+        printf("%s\n", def.c_str());
+    }
+  }
+
   printf("extern {\n");
   for (auto& p: globals) {
     printf("  pub static %s: %s;\n", p.first.c_str(), p.second.c_str());
@@ -113,13 +105,12 @@ void dump(const vector<Str>& link)
     printf("#[link(name=\"%s\")] extern {}\n", lib.c_str());
 
   // alias functions via #define
-  auto& ids = preprocessor->getIdentifierTable();
   for (const auto& it : ids)
   {
     IdentifierInfo& id = ids.get(it.first());
     Str name = id.getName().str();
     if (id.hasMacroDefinition() && exports(name, filter_inlines)) {
-      Str def = fold_macro(id, *preprocessor, functions);
+      Str def = fold_macro(id, *preprocessor, functions, true);
       if (def.size())
         printf("%s\n", def.c_str());
     }
@@ -131,6 +122,34 @@ void dump(const vector<Str>& link)
     }
   }
 }
+
+class FGConsumer : public ASTConsumer
+{
+public:
+  bool HandleTopLevelDecl(DeclGroupRef g) override
+  {
+    for (Decl* d : g)
+      traverse(d);
+
+    return true;
+  }
+
+  void HandleTranslationUnit(ASTContext&) override
+  {
+    dump(pkgconf_deps);
+  }
+};
+
+class FEAction : public ASTFrontendAction
+{
+public:
+  UPtr<ASTConsumer> CreateASTConsumer(CompilerInstance& ci, StringRef file) override
+  {
+    preprocessor = ci.getPreprocessorPtr();
+    compiler_context = &(ci.getASTContext());
+    return make_unique<FGConsumer>();
+  }
+};
 
 llvm::cl::OptionCategory toolCat("fgen options"s);
 
@@ -144,7 +163,6 @@ int main(int argc, const char** argv)
     cmd_line.push_back("-I"s + arg);
   }
 
-  vector<Str> pkgconf_deps;
   char buff[64];
   while (scanf("%63s", buff) == 1) {
     Str line(buff);
@@ -169,9 +187,5 @@ int main(int argc, const char** argv)
   ClangTool tool(db, sources);
 
   int res = tool.run(newFrontendActionFactory<FEAction>().get());
-  if (res == 0) {
-    dump(pkgconf_deps);
-  }
-
   return res;
 }

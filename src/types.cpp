@@ -77,6 +77,8 @@ Str w_type(QualType t)
   Type::TypeClass kind = t->getTypeClass();
 
   if (kind == Type::Typedef) {
+    if (name == "size_t"s)
+      return "usize"s;
     QualType can = t.getCanonicalType();
     if (name == get_name(can)) // 'typedef struct {} name' form
       t = can;
@@ -171,7 +173,8 @@ Str get_type(QualType t)
 
   if (kind == Type::ConstantArray) {
     auto at = static_cast<const ConstantArrayType*>(t.getTypePtr());
-    return '[' + get_type(at->getElementType()) + "; "s + at->getSize().toString(10, false) + ']';
+    return '[' + get_type(at->getElementType()) + "; "s
+        + at->getSize().toString(10, false) + ']';
   }
 
   Str k = get_name(t);
