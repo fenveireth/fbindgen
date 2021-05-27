@@ -79,6 +79,8 @@ Str w_type(QualType t)
   if (kind == Type::Typedef) {
     if (name == "size_t"s)
       return "usize"s;
+    if (name == "ssize_t"s)
+      return "isize"s;
     QualType can = t.getCanonicalType();
     if (name == get_name(can)) // 'typedef struct {} name' form
       t = can;
@@ -143,7 +145,7 @@ map<Str, Str> types;
 
 Str escape_name(Str s)
 {
-  static set<Str> keywords { "match", "move", "type" };
+  static set<Str> keywords { "box"s, "in"s, "match"s, "move"s, "ref"s, "type"s };
   if (keywords.find(s) != keywords.end())
     s = "r#"s + s;
   if (!s.size())
