@@ -412,6 +412,11 @@ Str fold_macro(IdentifierInfo& id, Preprocessor& cctx, const map<Str,
         v.insert(1, "o"s);
       return "pub const "s + name + ": "s + e.type + " = "s + v + ';';
     }
+
+    if (!function && e.type == "str"s) {
+      e.value.insert(e.value.size() - 1, "\\0"s);
+      return "pub const "s + name + ": &str = "s + e.value + ';';
+    }
   }
 
 #ifdef TRACE
