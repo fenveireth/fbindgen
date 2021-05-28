@@ -316,7 +316,7 @@ ConstExpr const_from_tkn(const Token& t)
   auto k = t.getKind();
   if (k == tok::char_constant) {
     res.value = Str(t.getLiteralData(), t.getLength());
-    res.type = "str"s;
+    res.type = "char"s;
   }
   else if (k == tok::identifier) {
     res.value = t.getIdentifierInfo()->getName().str();
@@ -416,6 +416,10 @@ Str fold_macro(IdentifierInfo& id, Preprocessor& cctx, const map<Str,
     if (!function && e.type == "str"s) {
       e.value.insert(e.value.size() - 1, "\\0"s);
       return "pub const "s + name + ": &str = "s + e.value + ';';
+    }
+
+    if (!function && e.type == "char"s) {
+      return "pub const "s + name + ": char = "s + e.value + ';';
     }
   }
 
