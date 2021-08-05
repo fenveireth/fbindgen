@@ -274,7 +274,7 @@ ConstExpr const_from_tkn(const Token& t)
     {tok::exclaimequal,   { "!="s,                ""s }},
     {tok::greater,        { ">"s,                 ""s }},
     {tok::greatergreater, { ">>"s,                ""s }},
-    {tok::hashhash,       { "##"s,                ""s }}, // should not be here, expand bug
+    {tok::hashhash,       { "##"s,                ""s }}, // should not be seen, expand bug
     {tok::kw___attribute, { ""s,                  "attribute"s }},
     {tok::kw__Bool,       { "bool"s,              "type"s }},
     {tok::kw__Complex,    { "complex"s,           "type"s }},
@@ -348,7 +348,7 @@ ConstExpr const_from_tkn(const Token& t)
       if ((f = res.value.find('U')) >= 0 || (f = res.value.find('u')) >= 0) {
         res.value.erase(f);
       }
-      if ((f = res.value.find('L')) >= 0) {
+      if ((f = res.value.find('L')) >= 0 || (f = res.value.find('l')) > 0) {
         res.value.erase(f);
         res.type = res.type[0] + "64"s;
       }
