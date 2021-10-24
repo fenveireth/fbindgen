@@ -3,6 +3,7 @@
 
 using namespace std;
 using namespace clang;
+using namespace llvm;
 
 const ASTContext* compiler_context;
 
@@ -93,7 +94,7 @@ Str w_type(QualType t)
   if (t->isRecordType())
   {
     const RecordDecl* trd = static_cast<const RecordType*>(t.getTypePtr())->getDecl();
-    if (name.find("anonymous at") != (size_t)-1)
+    if (name.find(":(unnamed at") != (size_t)-1)
       name = "anon_"s + to_string(anon_ctr++);
 
     vector<Field> fields;
@@ -176,7 +177,7 @@ Str get_type(QualType t)
   if (kind == Type::ConstantArray) {
     auto at = static_cast<const ConstantArrayType*>(t.getTypePtr());
     return '[' + get_type(at->getElementType()) + "; "s
-        + at->getSize().toString(10, false) + ']';
+        + toString(at->getSize(), 10, false) + ']';
   }
 
   Str k = get_name(t);

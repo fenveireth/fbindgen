@@ -4,6 +4,7 @@
 
 using namespace std;
 using namespace clang;
+using namespace llvm;
 
 namespace {
 
@@ -86,7 +87,7 @@ Str dump(const Stmt* s, bool remove_parens)
     ca = static_cast<const CastExpr*>(s);
     return dump_cast(ca->getSubExpr(), ca->getType());
   case Stmt::IntegerLiteralClass:
-    return static_cast<const IntegerLiteral*>(s)->getValue().toString(10, true);
+    return toString(static_cast<const IntegerLiteral*>(s)->getValue(), 10, true);
   case Stmt::MemberExprClass:
     me = static_cast<const MemberExpr*>(s);
     res = dump(me->getBase());

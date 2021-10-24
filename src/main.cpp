@@ -6,6 +6,7 @@
 using namespace std;
 using namespace clang;
 using namespace clang::tooling;
+using namespace llvm;
 
 namespace {
 
@@ -26,6 +27,7 @@ bool exports(const Str& name, const vector<regex>& lst)
 
 map<Str, UPtr<Fun>> functions;
 map<Str, Str> globals;
+map<Str, const RecordDecl*> types;
 
 void traverse(const Decl* d)
 {
@@ -43,7 +45,7 @@ void traverse(const Decl* d)
       Str name = c->getNameAsString();
       if (exports(name, filter_consts)) {
         Str ty = get_type(enu->getIntegerType());
-        printf("pub const %s: %s = %s;\n", name.c_str(), ty.c_str(), c->getInitVal().toString(10, true).c_str());
+        printf("pub const %s: %s = %s;\n", name.c_str(), ty.c_str(), toString(c->getInitVal(), 10, true).c_str());
       }
     }
   }
@@ -64,6 +66,13 @@ void traverse(const Decl* d)
     if (vd->hasExternalStorage() && exports(name, filter_consts)) {
       QualType t = vd->getType();
       globals[name] = get_type(t);
+    }
+  }
+  else if (kind == Decl::Record) {
+    auto rc = dynamic_cast<const RecordDecl*>(d);
+    Str name = rc->getNameAsString();
+    if (exports(name, filter_types)) {
+      types[name] = rc; // write deferred, to ignore forward declarations
     }
   }
 //  else
@@ -87,6 +96,13 @@ void dump(const vector<Str>& link)
       if (def.size())
         printf("%s\n", def.c_str());
     }
+  }
+
+  for (auto& p: types)
+  {
+    auto rc = p.second;
+    QualType t(rc->getTypeForDecl(), 0);
+    get_type(t);
   }
 
   printf("extern {\n");
