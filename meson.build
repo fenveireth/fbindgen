@@ -10,6 +10,7 @@ libdirs = [runllvmlib.stdout().strip()]
 deps = [cxx.find_library('clang-cpp', dirs:libdirs), cxx.find_library('LLVM', dirs:libdirs)]
 incs = [runllvminc.stdout().strip()]
 src = [
+  'src/clang.cpp',
   'src/detect.cpp',
   'src/function.cpp',
   'src/macro.cpp',

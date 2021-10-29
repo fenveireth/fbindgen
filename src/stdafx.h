@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <clang/Basic/Version.h>
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Frontend/FrontendAction.h>
 #include <clang/Lex/PreprocessorOptions.h>

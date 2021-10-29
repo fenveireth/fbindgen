@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "clang.h"
 #include "function.h"
 #include "types.h"
 
@@ -87,7 +88,7 @@ Str dump(const Stmt* s, bool remove_parens)
     ca = static_cast<const CastExpr*>(s);
     return dump_cast(ca->getSubExpr(), ca->getType());
   case Stmt::IntegerLiteralClass:
-    return toString(static_cast<const IntegerLiteral*>(s)->getValue(), 10, true);
+    return to_string(static_cast<const IntegerLiteral*>(s)->getValue());
   case Stmt::MemberExprClass:
     me = static_cast<const MemberExpr*>(s);
     res = dump(me->getBase());

@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "clang.h"
 #include "types.h"
 
 using namespace std;
@@ -94,7 +95,7 @@ Str w_type(QualType t)
   if (t->isRecordType())
   {
     const RecordDecl* trd = static_cast<const RecordType*>(t.getTypePtr())->getDecl();
-    if (name.find(":(unnamed at") != (size_t)-1)
+    if (is_anon(name))
       name = "anon_"s + to_string(anon_ctr++);
 
     vector<Field> fields;
@@ -177,7 +178,7 @@ Str get_type(QualType t)
   if (kind == Type::ConstantArray) {
     auto at = static_cast<const ConstantArrayType*>(t.getTypePtr());
     return '[' + get_type(at->getElementType()) + "; "s
-        + toString(at->getSize(), 10, false) + ']';
+        + to_string(at->getSize()) + ']';
   }
 
   Str k = get_name(t);

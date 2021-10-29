@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "clang.h"
 #include "detect.h"
 #include "macro.h"
 #include "types.h"
@@ -45,7 +46,7 @@ void traverse(const Decl* d)
       Str name = c->getNameAsString();
       if (exports(name, filter_consts)) {
         Str ty = get_type(enu->getIntegerType());
-        printf("pub const %s: %s = %s;\n", name.c_str(), ty.c_str(), toString(c->getInitVal(), 10, true).c_str());
+        printf("pub const %s: %s = %s;\n", name.c_str(), ty.c_str(), to_string(c->getInitVal()).c_str());
       }
     }
   }
