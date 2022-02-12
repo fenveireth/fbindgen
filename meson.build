@@ -1,4 +1,4 @@
-project('fgen', ['cpp'], version:'0.0.1', default_options:['cpp_std=c++17', 'cpp_eh=none'])
+project('fbindgen', ['cpp'], version:'0.0.1', default_options:['cpp_std=c++17', 'cpp_eh=none'])
 
 cxx = meson.get_compiler('cpp')
 
@@ -18,4 +18,4 @@ src = [
   'src/stdafx.cpp',
   'src/types.cpp',
 ]
-executable('fgen', src, cpp_pch:'src/stdafx.h', dependencies:deps, include_directories:incs)
+executable('fbindgen', src, cpp_pch:'src/stdafx.h', dependencies:deps, include_directories:incs)
