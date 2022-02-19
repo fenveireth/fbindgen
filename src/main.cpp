@@ -9,7 +9,11 @@ using namespace clang;
 using namespace clang::tooling;
 using namespace llvm;
 
+FILE* out;
+
 namespace {
+
+FILE* out_includes;
 
 vector<regex> filter_functions;
 vector<regex> filter_consts;
@@ -46,7 +50,7 @@ void traverse(const Decl* d)
 			Str name = c->getNameAsString();
 			if (exports(name, filter_consts)) {
 				Str ty = get_type(enu->getIntegerType());
-				printf("pub const %s: %s = %s;\n", name.c_str(), ty.c_str(), to_string(c->getInitVal()).c_str());
+				fprintf(out, "pub const %s: %s = %s;\n", name.c_str(), ty.c_str(), to_string(c->getInitVal()).c_str());
 			}
 		}
 	}
@@ -57,7 +61,7 @@ void traverse(const Decl* d)
 			Str to = get_type(td->getUnderlyingType());
 			if (name != to) {
 				add_typedef(name, to);
-				printf("pub type %s = %s;\n", name.c_str(), to.c_str());
+				fprintf(out, "pub type %s = %s;\n", name.c_str(), to.c_str());
 			}
 		}
 	}
@@ -77,7 +81,7 @@ void traverse(const Decl* d)
 		}
 	}
 //	else
-//		printf("UNK (td): %s\n", d->getDeclKindName());
+//		fprintf(stderr, "UNK (td): %s\n", d->getDeclKindName());
 }
 
 SPtr<Preprocessor> preprocessor;
@@ -95,7 +99,7 @@ void dump(const vector<Str>& link)
 		if (id.hasMacroDefinition() && exports(name, filter_consts)) {
 			Str def = fold_macro(id, *preprocessor, functions, false);
 			if (def.size())
-				printf("%s\n", def.c_str());
+				fprintf(out, "%s\n", def.c_str());
 		}
 	}
 
@@ -106,20 +110,20 @@ void dump(const vector<Str>& link)
 		get_type(t);
 	}
 
-	printf("extern {\n");
+	fprintf(out, "extern {\n");
 	for (auto& p: globals) {
-		printf("	pub static %s: %s;\n", p.first.c_str(), p.second.c_str());
+		fprintf(out, "	pub static %s: %s;\n", p.first.c_str(), p.second.c_str());
 	}
 
 	for (auto& p : functions) {
 		if (!p.second->is_inline) {
-			printf("	%s;\n", p.second->decl.c_str());
+			fprintf(out, "	%s;\n", p.second->decl.c_str());
 		}
 	}
-	printf("}\n");
+	fprintf(out, "}\n");
 
 	for (const Str& lib : link)
-		printf("#[link(name=\"%s\")] extern {}\n", lib.c_str());
+		fprintf(out, "#[link(name=\"%s\")] extern {}\n", lib.c_str());
 
 	// alias functions via #define
 	for (const auto& it : ids)
@@ -129,14 +133,21 @@ void dump(const vector<Str>& link)
 		if (id.hasMacroDefinition() && exports(name, filter_inlines)) {
 			Str def = fold_macro(id, *preprocessor, functions, true);
 			if (def.size())
-				printf("%s\n", def.c_str());
+				fprintf(out, "%s\n", def.c_str());
 		}
 	}
 
 	for (const auto& p : functions) {
 		if (p.second->is_inline) {
-			printf("%s\n", p.second->decl.c_str());
+			fprintf(out, "%s\n", p.second->decl.c_str());
 		}
+	}
+
+	// All opened .h files
+	auto it = preprocessor->getSourceManager().fileinfo_begin();
+	while (++it != preprocessor->getSourceManager().fileinfo_end())
+	{
+		fprintf(out_includes, "%s\n", it->first->getName().str().c_str());
 	}
 }
 
@@ -199,10 +210,14 @@ int main(int argc, const char** argv)
 		}
 	}
 
+	out = fopen("out.rs", "w");
+	out_includes = fopen("includes.txt", "w");
 	auto db = FixedCompilationDatabase("."s, cmd_line);
 	vector<Str> sources { argv[1] };
 	ClangTool tool(db, sources);
 
 	int res = tool.run(newFrontendActionFactory<FEAction>().get());
+	fclose(out);
+	fclose(out_includes);
 	return res;
 }

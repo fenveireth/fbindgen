@@ -109,7 +109,7 @@ int expand(vector<Token>& stack, int from, int to)
 			for (;; ++j)
 			{
 				if (j >= to || i_arg >= (int)mi->getNumParams()) {
-					printf("to %d iarg %d\n", to, i_arg);
+					fprintf(stderr, "to %d iarg %d\n", to, i_arg);
 					bail_out("bad function-like macro call", stack);
 				}
 
@@ -167,9 +167,9 @@ bool is_num(const ConstExpr& e)
 #ifdef TRACE
 void dump(const vector<ConstExpr>& s)
 {
-	printf("stack:\n");
+	fprintf(stderr, "stack:\n");
 	for (auto& e : s)
-		printf("%s %s\n", e.value.c_str(), e.type.c_str());
+		fprintf(stderr, "%s %s\n", e.value.c_str(), e.type.c_str());
 }
 #endif
 
@@ -425,7 +425,7 @@ Str fold_macro(IdentifierInfo& id, Preprocessor& cctx, const map<Str,
 	}
 
 #ifdef TRACE
-	printf("===== %s\n", name.c_str());
+	fprintf(stderr, "===== %s\n", name.c_str());
 	dump(cstack);
 #endif
 	return ""s;

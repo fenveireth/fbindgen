@@ -1,4 +1,6 @@
 
+extern FILE* out;
+
 /// must be set to work out type sizes
 extern const clang::ASTContext* compiler_context;
 

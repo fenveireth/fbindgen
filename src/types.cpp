@@ -87,7 +87,7 @@ Str w_type(QualType t)
 		if (name == get_name(can)) // 'typedef struct {} name' form
 			t = can;
 		else {
-			printf("pub type %s = %s;\n", name.c_str(), get_type(can).c_str());
+			fprintf(out, "pub type %s = %s;\n", name.c_str(), get_type(can).c_str());
 			return name;
 		}
 	}
@@ -107,12 +107,12 @@ Str w_type(QualType t)
 			nf.type_name = get_type(nf.type);
 		}
 
-		printf("#[repr(C)]\n");
+		fprintf(out, "#[repr(C)]\n");
 		bool is_union = trd->isUnion();
 		if (is_union)
-			printf("pub union %s {\n", name.c_str());
+			fprintf(out, "pub union %s {\n", name.c_str());
 		else
-			printf("pub struct %s {\n", name.c_str());
+			fprintf(out, "pub struct %s {\n", name.c_str());
 		for (Field& f: fields) {
 			Str fn = escape_name(f.name);
 			Str ty = f.type_name;
@@ -123,18 +123,18 @@ Str w_type(QualType t)
 				// + could not have been an array start anyway
 				ty = "Option<"s + get_type(f.type->getPointeeType()) + '>';
 			}
-			printf("	pub %s: %s,\n", fn.c_str(), ty.c_str());
+			fprintf(out, "\tpub %s: %s,\n", fn.c_str(), ty.c_str());
 		}
 		if (!fields.size())
-			printf("	_u: [u8; 0]\n");
-		printf("}\n");
+			fprintf(out, "\t_u: [u8; 0]\n");
+		fprintf(out, "}\n");
 	}
 	else if (t->isEnumeralType()) {
 		const EnumDecl* ted = static_cast<const EnumType*>(t.getTypePtr())->getDecl();
-		printf("pub type %s = %s;\n", name.c_str(), get_type(ted->getIntegerType()).c_str());
+		fprintf(out, "pub type %s = %s;\n", name.c_str(), get_type(ted->getIntegerType()).c_str());
 	}
 	else {
-		printf("UNK %s\n", name.c_str());
+		fprintf(out, "UNK %s\n", name.c_str());
 		t->dump();
 	}
 

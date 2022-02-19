@@ -13,7 +13,10 @@ library's user manual
 
 `echo <configuration> | fbindgen <C header file>`
 
-Outputs Rust code on stdout
+Output Rust code in './out.rs'
+
+Output list of included .h files in './includes.txt' (absolute paths, in no
+particular order), for correct regeneration
 
 Configuration is taken on stdin, as any sequence of these lines, in any amount :
 

@@ -6,6 +6,8 @@ find -type d | while read d; do
     continue
   fi
   echo $d
-  ../build/fbindgen $d/in.h < $d/filters.txt > $d/out.rs
-  diff $d/ref.rs $d/out.rs
+	pushd $d
+  ../../build/fbindgen in.h < filters.txt
+  diff ref.rs out.rs
+	popd
 done
