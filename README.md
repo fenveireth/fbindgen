@@ -3,7 +3,7 @@
 A toy replacement for Rust 'bindgen', that also attempts to rewrite simple
 macros and inline functions
 
-Uses the clang C++ library from LLVM 12 or 13
+Uses the clang C++ library from LLVM 12 or above
 
 The classic bindgen sensibly discards those, as they are not part of the target
 library's ABI. I wish to be able to call them, as they are part of the target
