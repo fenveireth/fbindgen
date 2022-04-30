@@ -19,3 +19,5 @@ src = [
   'src/types.cpp',
 ]
 executable('fbindgen', src, cpp_pch:'src/stdafx.h', dependencies:deps, include_directories:incs)
+
+test('all tests', find_program('tests/test.sh'), workdir: meson.source_root() / 'tests/')
