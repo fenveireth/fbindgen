@@ -118,11 +118,6 @@ Str w_type(QualType t)
 			Str ty = f.type_name;
 			if (is_union)
 				ty = "core::mem::ManuallyDrop<"s + ty + '>';
-			if (f.type->isPointerType() && f.type->getPointeeType()->isFunctionType()) {
-				// decaying function to pointer in Rust is a struggle
-				// + could not have been an array start anyway
-				ty = "Option<"s + get_type(f.type->getPointeeType()) + '>';
-			}
 			fprintf(out, "\tpub %s: %s,\n", fn.c_str(), ty.c_str());
 		}
 		if (!fields.size())
@@ -166,7 +161,14 @@ Str get_type(QualType t)
 	if (kind == Type::Decayed)
 		return get_type(static_cast<const DecayedType*>(t.getTypePtr())->getDecayedType());
 
-	if (kind == Type::Pointer) {
+	if (kind == Type::Pointer)
+	{
+		if (t->isPointerType() && t->getPointeeType()->isFunctionType()) {
+			// decaying function to pointer in Rust is a struggle
+			// + could not have been an array start anyway
+			return "Option<"s + get_type(t->getPointeeType()) + '>';
+		}
+
 		Str cst = t->getPointeeType().isConstQualified() ? "const"s : "mut"s;
 		return "*"s + cst + " "s + get_type(t->getPointeeType());
 	}

@@ -146,11 +146,6 @@ void Fun::rd_proto(const FunctionDecl* d)
 		Str ts = get_type(t);
 		if (t->isConstantArrayType())
 			ts = "&mut "s + ts;
-		if (t->isPointerType() && t->getPointeeType()->isFunctionType()) {
-			// decaying function to pointer in Rust is a struggle
-			// + could not have been an array start anyway
-			ts = "Option<"s + get_type(t->getPointeeType()) + '>';
-		}
 		argNames.push_back(n);
 		argTypes.push_back(ts);
 	}
