@@ -45,6 +45,7 @@ Str dump(const Stmt* s, bool remove_parens)
 	const BinaryOperator* bo;
 	const CallExpr* ce;
 	const CastExpr* ca;
+	const ForStmt* fs;
 	const MemberExpr* me;
 	const UnaryOperator* uo;
 	switch (s->getStmtClass())
@@ -84,6 +85,11 @@ Str dump(const Stmt* s, bool remove_parens)
 					res += " = "s + dump(vd->getInit());
 			}
 		}
+		return res;
+	case Stmt::ForStmtClass:
+		fs = static_cast<const ForStmt*>(s);
+		res = dump(fs->getInit()) + ";\nwhile "s + dump(fs->getCond()) + " {\n"s
+			+ dump(fs->getBody()) + ";\n"s + dump(fs->getInc()) + "\n}"s;
 		return res;
 	case Stmt::ImplicitCastExprClass:
 		ca = static_cast<const CastExpr*>(s);
