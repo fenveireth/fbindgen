@@ -196,7 +196,7 @@ Str get_type(QualType t)
 	return res;
 }
 
-void add_typedef(Str k, Str v)
+bool had_typedef(Str k)
 {
-	types[k] = v;
+	return types.count(k);
 }

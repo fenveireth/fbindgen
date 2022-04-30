@@ -30,9 +30,10 @@ bool exports(const Str& name, const vector<regex>& lst)
 	return false;
 }
 
-map<Str, UPtr<Fun>> functions;
+map<Str, const FunctionDecl*> functions;
 map<Str, Str> globals;
 map<Str, const RecordDecl*> types;
+map<Str, const TypedefNameDecl*> typedefs;
 
 void traverse(const Decl* d)
 {
@@ -41,7 +42,7 @@ void traverse(const Decl* d)
 		auto fun = dynamic_cast<const FunctionDecl*>(d);
 		Str funname = fun->getNameAsString();
 		if (exports(funname, fun->isInlined() ? filter_inlines : filter_functions))
-			functions[funname] = make_unique<Fun>(fun);
+			functions[funname] = fun;
 	}
 	else if (kind == Decl::Enum)
 	{
@@ -57,13 +58,8 @@ void traverse(const Decl* d)
 	else if (kind == Decl::Typedef) {
 		auto td = dynamic_cast<const TypedefNameDecl*>(d);
 		Str name = td->getNameAsString();
-		if (exports(name, filter_types)) {
-			Str to = get_type(td->getUnderlyingType());
-			if (name != to) {
-				add_typedef(name, to);
-				fprintf(out, "pub type %s = %s;\n", name.c_str(), to.c_str());
-			}
-		}
+		if (exports(name, filter_types))
+			typedefs[name] = td;
 	}
 	else if (kind == Decl::Var) {
 		auto vd = dynamic_cast<const VarDecl*>(d);
@@ -91,23 +87,34 @@ void dump(const vector<Str>& link)
 {
 	auto& ids = preprocessor->getIdentifierTable();
 
+	map<Str, UPtr<Fun>> parsed_funs;
+	for (auto& p : functions)
+		parsed_funs[p.first] = make_unique<Fun>(p.second);
+
 	// constants #define
 	for (const auto& it : ids)
 	{
 		IdentifierInfo& id = ids.get(it.first());
 		Str name = id.getName().str();
 		if (id.hasMacroDefinition() && exports(name, filter_consts)) {
-			Str def = fold_macro(id, *preprocessor, functions, false);
+			Str def = fold_macro(id, *preprocessor, parsed_funs, false);
 			if (def.size())
 				fprintf(out, "%s\n", def.c_str());
 		}
 	}
 
-	for (auto& p: types)
-	{
+	for (auto& p: types) {
 		auto rc = p.second;
 		QualType t(rc->getTypeForDecl(), 0);
 		get_type(t);
+	}
+
+	for (auto& p: typedefs)
+	{
+		Str to = get_type(p.second->getUnderlyingType());
+		if (!had_typedef(p.first) && p.first != to) {
+			fprintf(out, "pub type %s = %s;\n", p.first.c_str(), to.c_str());
+		}
 	}
 
 	fprintf(out, "extern {\n");
@@ -115,10 +122,9 @@ void dump(const vector<Str>& link)
 		fprintf(out, "	pub static %s: %s;\n", p.first.c_str(), p.second.c_str());
 	}
 
-	for (auto& p : functions) {
-		if (!p.second->is_inline) {
-			fprintf(out, "	%s;\n", p.second->decl.c_str());
-		}
+	for (auto& p : parsed_funs) {
+		if (!p.second->is_inline)
+			fprintf(out, "\t%s;\n", p.second->decl.c_str());
 	}
 	fprintf(out, "}\n");
 
@@ -131,16 +137,15 @@ void dump(const vector<Str>& link)
 		IdentifierInfo& id = ids.get(it.first());
 		Str name = id.getName().str();
 		if (id.hasMacroDefinition() && exports(name, filter_inlines)) {
-			Str def = fold_macro(id, *preprocessor, functions, true);
+			Str def = fold_macro(id, *preprocessor, parsed_funs, true);
 			if (def.size())
 				fprintf(out, "%s\n", def.c_str());
 		}
 	}
 
-	for (const auto& p : functions) {
-		if (p.second->is_inline) {
+	for (const auto& p : parsed_funs) {
+		if (p.second->is_inline)
 			fprintf(out, "%s\n", p.second->decl.c_str());
-		}
 	}
 
 	// All opened .h files
