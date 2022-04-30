@@ -41,6 +41,7 @@ Str dump_cast(const Expr* val, QualType to)
 Str dump(const Stmt* s, bool remove_parens)
 {
 	Str res;
+	Str opcode;
 	const BinaryOperator* bo;
 	const CallExpr* ce;
 	const CastExpr* ca;
@@ -104,7 +105,10 @@ Str dump(const Stmt* s, bool remove_parens)
 		return "return "s + dump(static_cast<const ReturnStmt*>(s)->getRetValue(), true);
 	case Stmt::UnaryOperatorClass:
 		uo = static_cast<const UnaryOperator*>(s);
-		return UnaryOperator::getOpcodeStr(uo->getOpcode()).str() + dump(uo->getSubExpr());
+		opcode = UnaryOperator::getOpcodeStr(uo->getOpcode()).str();
+		if (opcode == "&"s && !uo->getSubExpr()->getType().isConstQualified())
+			opcode = "&mut ";
+		return opcode + dump(uo->getSubExpr());
 	default:
 		return "<ASTDUMP:"s + s->getStmtClassName() + '>';
 	}
