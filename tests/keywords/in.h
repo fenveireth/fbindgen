@@ -1,0 +1,1 @@
+void fun(unsigned loop);

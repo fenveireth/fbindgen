@@ -142,7 +142,9 @@ map<Str, Str> types;
 
 Str escape_name(Str s)
 {
-	static set<Str> keywords { "box"s, "in"s, "match"s, "move"s, "ref"s, "type"s };
+	static set<Str> keywords {
+		"box"s, "in"s, "loop"s, "match"s, "move"s, "ref"s, "type"s
+	};
 	if (keywords.find(s) != keywords.end())
 		s = "r#"s + s;
 	if (!s.size())
