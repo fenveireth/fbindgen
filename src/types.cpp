@@ -47,6 +47,15 @@ Str primitive_type(QualType t)
 		return res;
 	}
 
+	if (kind == Type::Elaborated)
+	{
+		Str name = t.getAsString();
+		if (name == "size_t"s)
+			return "usize"s;
+		if (name == "ssize_t"s)
+			return "isize"s;
+	}
+
 	return ""s;
 }
 
@@ -73,16 +82,14 @@ struct Field
 	QualType type;
 };
 
+map<Str, Str> types;
+
 Str w_type(QualType t)
 {
 	Str name = get_name(t);
 	Type::TypeClass kind = t->getTypeClass();
 
 	if (kind == Type::Typedef) {
-		if (name == "size_t"s)
-			return "usize"s;
-		if (name == "ssize_t"s)
-			return "isize"s;
 		QualType can = t.getCanonicalType();
 		if (name == get_name(can)) // 'typedef struct {} name' form
 			t = can;
@@ -90,6 +97,18 @@ Str w_type(QualType t)
 			fprintf(out, "pub type %s = %s;\n", name.c_str(), get_type(can).c_str());
 			return name;
 		}
+	}
+
+	if (kind == Type::Elaborated)
+	{
+		Str t2 = get_type(t.getCanonicalType());
+		if (name[0] == '(') // anon
+			return t2;
+		if (name != t2 && !types.count(name)) {
+			fprintf(out, "pub type %s = %s;\n", name.c_str(), t2.c_str());
+			types[name] = name;
+		}
+		return name;
 	}
 
 	if (t->isRecordType())
@@ -136,8 +155,6 @@ Str w_type(QualType t)
 	return name;
 }
 
-map<Str, Str> types;
-
 }
 
 Str escape_name(Str s)
@@ -156,8 +173,6 @@ Str get_type(QualType t)
 {
 	Type::TypeClass kind = t->getTypeClass();
 
-	if (kind == Type::Elaborated)
-		return get_type(t.getCanonicalType());
 	if (kind == Type::Paren)
 		return get_type(t.getCanonicalType());
 	if (kind == Type::Decayed)
@@ -190,7 +205,8 @@ Str get_type(QualType t)
 	if (it != types.end())
 		return it->second;
 
-	types[k] = k; // temporary, for linked lists
+	if (kind != clang::Type::Elaborated)
+		types[k] = k; // temporary, for linked lists
 	Str res = w_type(t);
 	types[k] = res;
 	return res;
