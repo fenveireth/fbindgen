@@ -89,7 +89,12 @@ Str w_type(QualType t)
 	Str name = get_name(t);
 	Type::TypeClass kind = t->getTypeClass();
 
-	if (kind == Type::Typedef) {
+	if (kind == Type::Typedef)
+	{
+		if (name == "size_t"s)
+			return "usize"s;
+		if (name == "ssize_t"s)
+			return "isize"s;
 		QualType can = t.getCanonicalType();
 		if (name == get_name(can)) // 'typedef struct {} name' form
 			t = can;
