@@ -20,4 +20,6 @@ src = [
 ]
 executable('fbindgen', src, cpp_pch:'src/stdafx.h', dependencies:deps, include_directories:incs)
 
+test_detect = executable('test_detect', ['tests/detect.cpp', 'src/detect.cpp'], cpp_pch:'src/stdafx.h', dependencies:deps, include_directories:incs, build_by_default: false)
+test('clang detection', test_detect, workdir: meson.source_root() / 'tests/')
 test('all tests', find_program('tests/test.sh'), workdir: meson.source_root() / 'tests/')

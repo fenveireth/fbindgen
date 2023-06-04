@@ -2,7 +2,7 @@
 class Fun
 {
 public:
-	int is_inline : 1;
+	uint is_inline : 1;
 	Str name;
 	Str decl;
 	Str type;

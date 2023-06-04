@@ -17,3 +17,4 @@
 template <class T> using UPtr = std::unique_ptr<T>;
 template <class T> using SPtr = std::shared_ptr<T>;
 using Str = std::string;
+using uint = unsigned int;
