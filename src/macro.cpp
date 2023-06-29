@@ -154,7 +154,6 @@ struct ConstExpr
 
 long get_num(ConstExpr& t)
 {
-	//printf("%s\n", t.value.c_str());
 	return stol(t.value, 0, 0);
 }
 
@@ -234,10 +233,18 @@ void fold(vector<ConstExpr>& stack, int from, int to)
 		})
 
 		P4({
-			if (!(t0.value == "("s && t1.type == "type"s && t2.value == ")"s && is_num(t3)))
+			if (!(t0.value == "("s
+					&& (t1.type == "type"s || (t1.type == "id"s && ptr_typedefs.count(t1.value)))
+					&& t2.value == ")"s
+					&& is_num(t3)))
 				continue;
 			r.type = t1.value;
-			if ((int)r.type.find('*') >= 0)
+			bool is_ptr = (int)r.type.find('*') >= 0;
+			if (t1.type == "id"s) {
+				r.type = t1.value;
+				is_ptr = true;
+			}
+			if (is_ptr)
 				r.value = "unsafe { std::mem::transmute("s + t3.value + "isize) }"s;
 			else
 				r.value = t3.value;
@@ -411,6 +418,9 @@ Str fold_macro(IdentifierInfo& id, Preprocessor& cctx, const map<Str,
 			Str v = e.value;
 			if (v[0] == '0' && v.size() > 1 && v[1] != 'x')
 				v.insert(1, "o"s);
+			auto it_typedef = ptr_typedefs.find(e.type);
+			if (it_typedef != ptr_typedefs.end())
+				get_type(it_typedef->second);
 			return "pub const "s + name + ": "s + e.type + " = "s + v + ';';
 		}
 

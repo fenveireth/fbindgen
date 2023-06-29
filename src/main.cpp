@@ -10,6 +10,9 @@ using namespace clang::tooling;
 using namespace llvm;
 
 FILE* out;
+SPtr<Preprocessor> preprocessor;
+vector<Str> pkgconf_deps;
+map<Str, clang::QualType> ptr_typedefs;
 
 namespace {
 
@@ -60,6 +63,8 @@ void traverse(const Decl* d)
 		Str name = td->getNameAsString();
 		if (exports(name, filter_types))
 			typedefs[name] = td;
+		if (td->getCanonicalDecl()->getUnderlyingType()->isPointerType())
+			ptr_typedefs[name] = compiler_context->getTypeDeclType(td);
 	}
 	else if (kind == Decl::Var) {
 		auto vd = dynamic_cast<const VarDecl*>(d);
@@ -79,9 +84,6 @@ void traverse(const Decl* d)
 //	else
 //		fprintf(stderr, "UNK (td): %s\n", d->getDeclKindName());
 }
-
-SPtr<Preprocessor> preprocessor;
-vector<Str> pkgconf_deps;
 
 void dump(const vector<Str>& link)
 {
