@@ -232,6 +232,13 @@ void fold(vector<ConstExpr>& stack, int from, int to)
 			r.value = '-' + t1.value;
 		})
 
+		P2({
+			if (!(t0.value == "~"s && is_num(t1)))
+				continue;
+			r.type = t1.type;
+			r.value = '!' + t1.value;
+		})
+
 		P4({
 			if (!(t0.value == "("s
 					&& (t1.type == "type"s || (t1.type == "id"s && ptr_typedefs.count(t1.value)))
@@ -319,6 +326,7 @@ ConstExpr const_from_tkn(const Token& t)
 		{tok::semi,           { ":"s,                ""s }},
 		{tok::slash,          { "/"s,                ""s }},
 		{tok::star,           { "*"s,                ""s }},
+		{tok::tilde,          { "~"s,                ""s }},
 	};
 
 	auto k = t.getKind();
@@ -354,7 +362,8 @@ ConstExpr const_from_tkn(const Token& t)
 			else if (v > 0x7FFFFFFF)
 				res.type = "u64"s;
 			if ((f = res.value.find('U')) >= 0 || (f = res.value.find('u')) >= 0) {
-				res.value.erase(f);
+				res.value.erase(f, 1);
+				res.type[0] = 'u';
 			}
 			if ((f = res.value.find('L')) >= 0 || (f = res.value.find('l')) > 0) {
 				res.value.erase(f);

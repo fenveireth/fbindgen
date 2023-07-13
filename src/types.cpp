@@ -31,7 +31,7 @@ Str primitive_type(QualType t)
 		exit(1);
 	}
 
-	if (kind == Type::FunctionProto) {
+	if (kind == Type::FunctionProto || kind == Type::FunctionNoProto) {
 		auto ft = static_cast<const FunctionProtoType*>(t.getTypePtr());
 		Str res = "extern \"C\" fn("s;
 		unsigned i = 0;
@@ -153,7 +153,7 @@ Str w_type(QualType t)
 		fprintf(out, "pub type %s = %s;\n", name.c_str(), get_type(ted->getIntegerType()).c_str());
 	}
 	else {
-		fprintf(out, "UNK %s\n", name.c_str());
+		fprintf(out, "UNK %s %s\n", name.c_str(), t->getTypeClassName());
 		t->dump();
 	}
 
@@ -215,6 +215,11 @@ Str get_type(QualType t)
 	Str res = w_type(t);
 	types[k] = res;
 	return res;
+}
+
+void add_typedef(Str k, Str v)
+{
+	types[k] = k;
 }
 
 bool had_typedef(Str k)

@@ -54,7 +54,10 @@ void traverse(const Decl* d)
 			Str name = c->getNameAsString();
 			if (exports(name, filter_consts)) {
 				Str ty = get_type(enu->getIntegerType());
-				fprintf(out, "pub const %s: %s = %s;\n", name.c_str(), ty.c_str(), to_string(c->getInitVal()).c_str());
+				Str val = to_string(c->getInitVal());
+				if (ty[0] == 'u' && val == "-1")
+					val = "!0"s;
+				fprintf(out, "pub const %s: %s = %s;\n", name.c_str(), ty.c_str(), val.c_str());
 			}
 		}
 	}
@@ -116,6 +119,7 @@ void dump(const vector<Str>& link)
 		Str to = get_type(p.second->getUnderlyingType());
 		if (!had_typedef(p.first) && p.first != to) {
 			fprintf(out, "pub type %s = %s;\n", p.first.c_str(), to.c_str());
+			add_typedef(p.first, to);
 		}
 	}
 
