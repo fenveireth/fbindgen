@@ -3,4 +3,8 @@ struct A {
 		int x;
 		double y;
 	} u;
+	union {
+		int z;
+		int w;
+	};
 };
