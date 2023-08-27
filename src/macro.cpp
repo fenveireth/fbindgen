@@ -289,10 +289,12 @@ ConstExpr const_from_tkn(const Token& t)
 		{tok::exclaimequal,   { "!="s,               ""s }},
 		{tok::greater,        { ">"s,                ""s }},
 		{tok::greatergreater, { ">>"s,               ""s }},
+		{tok::hash,           { "#"s,                ""s }},
 		{tok::hashhash,       { "##"s,               ""s }}, // should not be seen, expand bug
 		{tok::kw___attribute, { ""s,                 "attribute"s }},
 		{tok::kw__Bool,       { "bool"s,             "type"s }},
 		{tok::kw__Complex,    { "complex"s,          "type"s }},
+		{tok::kw_asm,         { "asm"s,              "asm"s }},
 		{tok::kw_char,        { "i8"s,               "type"s }},
 		{tok::kw_const,       { "const"s,            ""s }},
 		{tok::kw_do,          { "do"s,               ""s }},
@@ -405,6 +407,9 @@ Str fold_macro(IdentifierInfo& id, Preprocessor& cctx, const map<Str,
 	t.setIdentifierInfo(&id);
 	vector<Token> stack { t };
 
+#ifdef TRACE
+	fprintf(stderr, "===== %s\n", name.c_str());
+#endif
 	expand(stack, 0, 1);
 
 	vector<ConstExpr> cstack;
@@ -444,7 +449,6 @@ Str fold_macro(IdentifierInfo& id, Preprocessor& cctx, const map<Str,
 	}
 
 #ifdef TRACE
-	fprintf(stderr, "===== %s\n", name.c_str());
 	dump(cstack);
 #endif
 	return ""s;
