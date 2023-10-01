@@ -4,7 +4,6 @@
 
 using namespace std;
 using namespace clang;
-using namespace llvm;
 
 const ASTContext* compiler_context;
 
@@ -31,7 +30,7 @@ Str primitive_type(QualType t)
 		exit(1);
 	}
 
-	if (kind == Type::FunctionProto || kind == Type::FunctionNoProto) {
+	if (kind == Type::FunctionProto) {
 		auto ft = static_cast<const FunctionProtoType*>(t.getTypePtr());
 		Str res = "extern \"C\" fn("s;
 		unsigned i = 0;
@@ -41,6 +40,15 @@ Str primitive_type(QualType t)
 			res += get_type(ft->getParamType(i));
 		}
 		res += ')';
+		QualType rt = ft->getReturnType();
+		if (rt.getTypePtr() && !rt->isVoidType())
+			res += " -> "s + get_type(rt);
+		return res;
+	}
+	
+	if (kind == Type::FunctionNoProto) {
+		auto ft = static_cast<const FunctionNoProtoType*>(t.getTypePtr());
+		Str res = "extern \"C\" fn()"s;
 		QualType rt = ft->getReturnType();
 		if (rt.getTypePtr() && !rt->isVoidType())
 			res += " -> "s + get_type(rt);
@@ -203,6 +211,11 @@ Str get_type(QualType t)
 		auto at = static_cast<const ConstantArrayType*>(t.getTypePtr());
 		return '[' + get_type(at->getElementType()) + "; "s
 				+ to_string(at->getSize()) + ']';
+	}
+
+	if (kind == Type::IncompleteArray) {
+		auto at = static_cast<const IncompleteArrayType*>(t.getTypePtr());
+		return '[' + get_type(at->getElementType()) + "; 0]"s;
 	}
 
 	Str k = get_name(t);

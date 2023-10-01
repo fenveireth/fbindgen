@@ -1,4 +1,4 @@
-project('fbindgen', ['cpp'], version:'0.0.1', default_options:['cpp_std=c++17', 'cpp_eh=none'])
+project('fbindgen', ['cpp'], version:'0.0.1', default_options:['cpp_std=c++20', 'cpp_eh=none'])
 
 cxx = meson.get_compiler('cpp')
 
