@@ -69,12 +69,23 @@ void traverse(const Decl* d)
 		if (td->getCanonicalDecl()->getUnderlyingType()->isPointerType())
 			ptr_typedefs[name] = compiler_context->getTypeDeclType(td);
 	}
-	else if (kind == Decl::Var) {
+	else if (kind == Decl::Var)
+	{
 		auto vd = dynamic_cast<const VarDecl*>(d);
 		Str name = vd->getNameAsString();
-		if (vd->hasExternalStorage() && exports(name, filter_consts)) {
-			QualType t = vd->getType();
-			globals[name] = get_type(t);
+		if (exports(name, filter_consts))
+		{
+			if (vd->hasExternalStorage()) {
+				QualType t = vd->getType();
+				globals[name] = get_type(t);
+			}
+			else {
+				Str ty = get_type(vd->getType());
+				Str val = vd->evaluateValue()->getAsString(*compiler_context, vd->getType());
+				if (ty[0] == 'u' && val == "-1")
+					val = "!0"s;
+				fprintf(out, "pub const %s: %s = %s;\n", name.c_str(), ty.c_str(), val.c_str());
+			}
 		}
 	}
 	else if (kind == Decl::Record) {
@@ -84,8 +95,8 @@ void traverse(const Decl* d)
 			types[name] = rc; // write deferred, to ignore forward declarations
 		}
 	}
-//	else
-//		fprintf(stderr, "UNK (td): %s\n", d->getDeclKindName());
+	//else
+	//	fprintf(stderr, "UNK (td): %s\n", d->getDeclKindName());
 }
 
 void dump(const vector<Str>& link)
