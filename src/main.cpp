@@ -213,8 +213,8 @@ int main(int argc, const char** argv)
 		cmd_line.push_back("-I"s + arg);
 	}
 
-	char buff[64];
-	while (scanf("%63s", buff) == 1) {
+	char buff[128];
+	while (scanf("%127s", buff) == 1) {
 		Str line(buff);
 		if (!strncmp("Pkgconf:", buff, 8))
 			call_pkgconf(line.substr(8), cmd_line, pkgconf_deps);
