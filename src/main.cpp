@@ -169,7 +169,7 @@ void dump(const vector<Str>& link)
 	auto it = preprocessor->getSourceManager().fileinfo_begin();
 	while (++it != preprocessor->getSourceManager().fileinfo_end())
 	{
-		fprintf(out_includes, "%s\n", it->first->getName().str().c_str());
+		fprintf(out_includes, "%s\n", fileinfo_iterator_get_name(it).c_str());
 	}
 }
 

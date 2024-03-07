@@ -18,3 +18,12 @@ bool is_anon(const Str& type_name)
 	return type_name.find(":(unnamed at") != (size_t)-1
 		|| type_name.find(":(anonymous at") != (size_t)-1;
 }
+
+Str fileinfo_iterator_get_name(const clang::SourceManager::fileinfo_iterator& it)
+{
+#if CLANG_VERSION_MAJOR < 18
+	return it->first->getName().str();
+#else
+	return it->first.getName().str();
+#endif
+}
