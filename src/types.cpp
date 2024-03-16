@@ -173,7 +173,15 @@ Str w_type(QualType t)
 Str escape_name(Str s)
 {
 	static set<Str> keywords {
-		"box"s, "in"s, "loop"s, "match"s, "move"s, "ref"s, "type"s
+		"box"s,
+		"impl"s,
+		"in"s,
+		"loop"s,
+		"match"s,
+		"move"s,
+		"priv"s,
+		"ref"s,
+		"type"s
 	};
 	if (keywords.find(s) != keywords.end())
 		s = "r#"s + s;
