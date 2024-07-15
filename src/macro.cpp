@@ -293,6 +293,7 @@ ConstExpr const_from_tkn(const Token& t)
 		{tok::hash,           { "#"s,                ""s }},
 		{tok::hashhash,       { "##"s,               ""s }}, // should not be seen, expand bug
 		{tok::kw___attribute, { ""s,                 "attribute"s }},
+		{tok::kw__Alignof,    { "alignof"s,          ""s }},
 		{tok::kw__Bool,       { "bool"s,             "type"s }},
 		{tok::kw__Complex,    { "complex"s,          "type"s }},
 		{tok::kw_asm,         { "asm"s,              "asm"s }},
