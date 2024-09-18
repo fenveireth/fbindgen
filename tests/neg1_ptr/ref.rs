@@ -1,3 +1,3 @@
-pub const PTR: *mut std::ffi::c_void = unsafe { std::mem::transmute(-1isize) };
+pub const PTR: *mut std::ffi::c_void = -1isize as *mut std::ffi::c_void;
 extern {
 }

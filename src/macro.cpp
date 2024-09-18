@@ -252,7 +252,17 @@ void fold(vector<ConstExpr>& stack, int from, int to)
 				is_ptr = true;
 			}
 			if (is_ptr)
-				r.value = "unsafe { std::mem::transmute("s + t3.value + "isize) }"s;
+			{
+				if (t3.value == "0"s)
+				{
+					if (ptrfun_typedefs.contains(r.type))
+						r.value = "None"s;
+					else
+						r.value = "std::ptr::null_mut()"s;
+				}
+				else
+					r.value = t3.value + "isize as "s + r.type;
+			}
 			else
 				r.value = t3.value;
 		})

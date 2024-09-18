@@ -13,6 +13,7 @@ FILE* out;
 SPtr<Preprocessor> preprocessor;
 vector<Str> pkgconf_deps;
 map<Str, clang::QualType> ptr_typedefs;
+map<Str, clang::QualType> ptrfun_typedefs;
 
 namespace {
 
@@ -66,8 +67,13 @@ void traverse(const Decl* d)
 		Str name = td->getNameAsString();
 		if (exports(name, filter_types))
 			typedefs[name] = td;
-		if (td->getCanonicalDecl()->getUnderlyingType()->isPointerType())
+		auto resolved = td->getCanonicalDecl()->getUnderlyingType();
+		if (resolved->isPointerType())
+		{
 			ptr_typedefs[name] = compiler_context->getTypeDeclType(td);
+			if (resolved->isFunctionPointerType())
+				ptrfun_typedefs[name] = compiler_context->getTypeDeclType(td);
+		}
 	}
 	else if (kind == Decl::Var)
 	{
