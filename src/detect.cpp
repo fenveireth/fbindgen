@@ -6,9 +6,17 @@ vector<Str> parse_clang_output(const char* str)
 {
 	vector<Str> res;
 	const char* cur = strstr(str, "#include <...> search starts here:");
+	if (!cur) {
+		fputs("clang conf detect: buffer too small\n", stderr);
+		abort();
+	}
 
 	while ((cur = strchr(cur, '/'))) {
 		const char* c2 = strchr(cur, '\n');
+		if (!c2) {
+			fputs("clang conf detect: buffer too small\n", stderr);
+			abort();
+		}
 		res.push_back(Str(cur, c2 - cur));
 		cur = c2 + 1;
 		if (cur[0] == 'E') // "End of search list"
@@ -28,11 +36,11 @@ vector<Str> detect_clang()
 	dup2(pip[1], 1);
 	dup2(pip[1], 2);
 
-	char buff[2048] = {};
+	char buff[4096] = {};
 	FILE* out = popen("clang -E -v -", "w");
 	pclose(out);
 	close(pip[1]);
-	if (read(pip[0], buff, 2047) <= 0)
+	if (read(pip[0], buff, 4095) <= 0)
 		abort();
 	dup2(orig_out, 1);
 	dup2(orig_err, 2);
