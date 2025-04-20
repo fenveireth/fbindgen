@@ -45,7 +45,7 @@ Str primitive_type(QualType t)
 			res += " -> "s + get_type(rt);
 		return res;
 	}
-	
+
 	if (kind == Type::FunctionNoProto) {
 		auto ft = static_cast<const FunctionNoProtoType*>(t.getTypePtr());
 		Str res = "extern \"C\" fn()"s;

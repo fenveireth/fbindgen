@@ -13,5 +13,3 @@ pub struct A {
 	pub u: anon_0,
 	pub anon_2: anon_1,
 }
-extern {
-}

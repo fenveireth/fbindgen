@@ -3,7 +3,7 @@ pub struct T {
 	pub member: i32,
 }
 pub type r1 = Option<extern "C" fn(*mut T)>;
-extern {
+unsafe extern "C" {
 	pub fn r2(r#ref: *mut T);
 }
 pub unsafe fn r3() {

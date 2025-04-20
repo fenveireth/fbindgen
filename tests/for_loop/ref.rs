@@ -1,4 +1,4 @@
-extern {
+unsafe extern "C" {
 }
 pub unsafe fn f() {
 let mut i: i32;

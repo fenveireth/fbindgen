@@ -140,19 +140,22 @@ void dump(const vector<Str>& link)
 		}
 	}
 
-	fprintf(out, "extern {\n");
-	for (auto& p: globals) {
-		fprintf(out, "	pub static %s: %s;\n", p.first.c_str(), p.second.c_str());
-	}
+	if (globals.size() || parsed_funs.size())
+	{
+		fprintf(out, "unsafe extern \"C\" {\n");
+		for (auto& p: globals) {
+			fprintf(out, "	pub static %s: %s;\n", p.first.c_str(), p.second.c_str());
+		}
 
-	for (auto& p : parsed_funs) {
-		if (!p.second->is_inline)
-			fprintf(out, "\t%s;\n", p.second->decl.c_str());
+		for (auto& p : parsed_funs) {
+			if (!p.second->is_inline)
+				fprintf(out, "\t%s;\n", p.second->decl.c_str());
+		}
+		fprintf(out, "}\n");
 	}
-	fprintf(out, "}\n");
 
 	for (const Str& lib : link)
-		fprintf(out, "#[link(name=\"%s\")] extern {}\n", lib.c_str());
+		fprintf(out, "#[link(name=\"%s\")] unsafe extern \"C\" {}\n", lib.c_str());
 
 	// alias functions via #define
 	for (const auto& it : ids)

@@ -5,5 +5,3 @@ pub struct cmsghdr {
 	pub cmsg_type: i32,
 	pub __cmsg_data: [u8; 0],
 }
-extern {
-}
