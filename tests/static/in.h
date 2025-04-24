@@ -1,0 +1,1 @@
+#define PW_API_MEM static inline

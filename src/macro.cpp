@@ -321,6 +321,7 @@ ConstExpr const_from_tkn(const Token& t)
 		{tok::kw_short,       { "i16"s,              "type"s }},
 		{tok::kw_signed,      { "i32"s,              "type"s }},
 		{tok::kw_sizeof,      { "sizeof"s,           "id"s }},
+		{tok::kw_static,      { ""s,                 "static"s }},
 		{tok::kw_struct,      { "struct"s,           ""s }},
 		{tok::kw_typeof,      { "typeof"s,           "id"s }},
 		{tok::kw_unsigned,    { "u32"s,              "type"s }},
