@@ -154,7 +154,7 @@ void Fun::rd_proto(const FunctionDecl* d)
 	}
 
 	decl = "pub fn "s + name + '(';
-	type = "unsafe extern fn("s;
+	type = "unsafe extern \"C\" fn("s;
 	for (unsigned i=0; i < argTypes.size(); ++i) {
 		if (i > 0) {
 			decl += ", "s;
